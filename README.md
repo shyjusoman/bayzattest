@@ -29,4 +29,5 @@ Dependant
 - Expose a **REST API**, no frontend is required.
 - Usage of **kotlin** will be considered a plus.
 - Usage of **API Blueprint** will be considered a plus.
+- Proper unit testing and coverage will be considered a plus.
 - Improvise where details are omitted.
