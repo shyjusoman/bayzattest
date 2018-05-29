@@ -32,11 +32,11 @@ public class Employee {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JsonIgnore
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "company_id", nullable = false)
 	private Company company;
 
 	@OneToMany(mappedBy = "employee")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private List<Dependant> dependats;
 
 	public List<Dependant> getDependats() {

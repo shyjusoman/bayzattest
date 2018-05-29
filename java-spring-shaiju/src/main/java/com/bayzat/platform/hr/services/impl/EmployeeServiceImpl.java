@@ -60,7 +60,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Employee updateEmployee(Employee employee, Long employeeId,Long companyId) {
 		companyService.validateCompany(companyId);
 		Employee employeeInSystem=findById(companyId, employeeId);
+		Company company=employeeInSystem.getCompany();
 		BeanUtils.copyProperties(employee, employeeInSystem);
+		employeeInSystem.setCompany(company);
 		return employeeRepository.save(employeeInSystem);
 	}
 

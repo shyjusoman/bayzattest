@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Dependant {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String name;
 	private String phoneNumber;
@@ -28,7 +28,6 @@ public class Dependant {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JsonIgnore
 	@JoinColumn(name = "employee_id", nullable = false)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Employee employee;
 
 	public Long getId() {

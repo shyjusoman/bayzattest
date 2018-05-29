@@ -8,6 +8,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 public class Company {
 
@@ -19,6 +22,7 @@ public class Company {
 	private String address;
 	
 	@OneToMany(mappedBy = "company")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private List<Employee> employees;
 	
 	public Long getId() {

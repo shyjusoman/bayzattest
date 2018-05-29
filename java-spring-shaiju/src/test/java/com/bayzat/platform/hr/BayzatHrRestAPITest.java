@@ -1,26 +1,18 @@
 package com.bayzat.platform.hr;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.core.IsInstanceOf;
-import org.hamcrest.core.IsNot;
-import org.hibernate.hql.internal.ast.tree.IsNotNullLogicOperatorNode;
-import org.hibernate.hql.internal.ast.tree.IsNullLogicOperatorNode;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -32,19 +24,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.bayzat.platform.hr.entities.*;
-import com.bayzat.platform.hr.repositories.*;
-import com.bayzat.platform.hr.services.CompanyService;
-import com.bayzat.platform.hr.services.DependantService;
-import com.bayzat.platform.hr.services.EmployeeService;
 import com.bayzat.platform.hr.type.RelationShipType;
 import com.bayzat.platform.utils.JsonUtil;
-
-import junit.framework.Assert;
 
 
 @RunWith(SpringRunner.class)
@@ -61,8 +45,6 @@ public class BayzatHrRestAPITest {
 	
 	SimpleDateFormat sdf=new SimpleDateFormat("dd/mm/yyyy");
 	
-	private List<Employee> employees = new ArrayList<>();
-	
 	private List<Dependant> dependents = new ArrayList<>();
 	
 	@Autowired
@@ -70,15 +52,6 @@ public class BayzatHrRestAPITest {
 	
 	@Autowired
 	private WebApplicationContext webApplicationContext;
-	
-	@Autowired
-	private CompanyService companyService;	
-	
-	@Autowired
-	private EmployeeService employeeService;
-	
-	@Autowired
-	private DependantService dependantService;
     
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
@@ -87,24 +60,6 @@ public class BayzatHrRestAPITest {
 	@Before
 	public void prepare () throws ParseException{
 		this.mockMvc = webAppContextSetup(webApplicationContext).build();
-		/*//this.company=new Company("BayZat","UAE");
-		//companyService.save(company);
-		
-		//Employee employee=employeeService.save(this.company.getId(),new Employee(this.company, "Shaiju", "8129998515", "Male", sdf.parse("04/03/1982"), 30000));
-		this.employee=new Employee(this.company, "Shaiju", "8129998515", "Male", sdf.parse("04/03/1982"), 30000);
-		//Dependant dependent1=dependantService.save(this.company.getId(),employee.getId(),new Dependant("Shinju", "9645171203", new Date(), RelationShipType.HUSBAND.getRelationIdentifer(), employee));
-		//Dependant dependent2=dependantService.save(this.company.getId(),employee.getId(),new Dependant("Albin S Shaiju", "9645171203", new Date(), RelationShipType.FATHER.getRelationIdentifer(), employee));
-		//Dependant dependent3=dependantService.save(this.company.getId(),employee.getId(),new Dependant("Nivin S Shaiju", "9645171203", new Date(), RelationShipType.FATHER.getRelationIdentifer(), employee));
-		Dependant dependent1=new Dependant("Shinju", "9645171203", new Date(), RelationShipType.HUSBAND.getRelationIdentifer(), employee);
-		Dependant dependent2=new Dependant("Albin S Shaiju", "9645171203", new Date(), RelationShipType.FATHER.getRelationIdentifer(), employee);
-		Dependant dependent3=new Dependant("Nivin S Shaiju", "9645171203", new Date(), RelationShipType.FATHER.getRelationIdentifer(), employee);
-    	this.dependents.add(dependent1);
-    	this.dependents.add(dependent2);
-    	this.dependents.add(dependent3);
-    	
-    	employee.setDependats(this.dependents);
-		this.employees.add(employee);
-		company.setEmployees(this.employees);*/
 	}
 	
 	@Test
@@ -130,8 +85,10 @@ public class BayzatHrRestAPITest {
 	public void test0003_getCompanyByName() throws Exception {
 		prepareTestCompany();
 		String companyJosn=mockMvc.perform(get("/companies/name/" + this.company.getName())).
-				andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-		List<Object> existingCompanyLst= jsonUtil.convertToListOfObjects(companyJosn,Company.class);
+				andExpect(status().isOk()).andExpect(content().contentType(contentType)).
+				andExpect(jsonPath("$[0].name", is(this.company.getName()))).
+				andReturn().getResponse().getContentAsString();
+		//List<Object> existingCompanyLst= jsonUtil.convertToListOfObjects(companyJosn,Company.class);
 		//Company existingCompany=(Company)existingCompanyLst.get(0);
 		
     }
@@ -140,26 +97,104 @@ public class BayzatHrRestAPITest {
 	public void test0004_createCompanyEmployee() throws Exception{
 		prepareTestEmployee();
 		String employeeJson = jsonUtil.convertToJson(this.employee);
-		Long companyId=getCompanyIdByName();
+		Long companyId=getCompanyId();
 		String response=this.mockMvc.perform(post("/companies/"+companyId+"/employees")
                 .contentType(contentType)
 				.content(employeeJson))
-				.andExpect(status().isOk()).andExpect(content().contentType(contentType)).
-				andReturn().getResponse().getContentAsString();
+				.andExpect(status().isOk()).andExpect(content().contentType(contentType))
+				.andExpect(jsonPath("$.name", is(this.employee.getName())))				
+				.andReturn().getResponse().getContentAsString();
+		this.employee=(Employee) jsonUtil.convertToObject(response, Employee.class);
+	}
+	@Test
+	public void test0005_updateCompanyEmployee() throws Exception{
+		prepareTestEmployee();
+		this.employee.setSalary(40000);		
+		Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+		this.employee.setId(employeeId);
+		String employeeJson = jsonUtil.convertToJson(this.employee);
+		String response=this.mockMvc.perform(put("/companies/"+companyId+"/employees/"+employeeId)
+                .contentType(contentType)
+				.content(employeeJson))
+				.andExpect(status().isOk()).andExpect(content().contentType(contentType))
+				.andExpect(jsonPath("$.name", is(this.employee.getName())))
+				.andExpect(jsonPath("$.salary", is(40000)))
+				.andReturn().getResponse().getContentAsString();
 		this.employee=(Employee) jsonUtil.convertToObject(response, Employee.class);
 	}
     @Test
-	public void test0005_getCompanyEmployees() throws Exception {
-    	Long companyId=getCompanyIdByName();
+	public void test0006_getCompanyEmployees() throws Exception {
+    	Long companyId=getCompanyId();
         mockMvc.perform(get("/companies/" + companyId+ "/employees/"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(contentType))
                 .andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].id", anything()));
     }
     
+    @Test
+	public void test0007_createEmployeeDependents() throws Exception{
+		prepareTestDependents();
+		Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+		for(Dependant dependant:this.dependents){
+			String dependantJson = jsonUtil.convertToJson(dependant);
+			String response = this.mockMvc.perform(post("/companies/"+companyId+"/employees/"+employeeId+"/dependants")
+					.contentType(contentType).content(dependantJson))
+					.andExpect(status().isOk()).andExpect(content().contentType(contentType)).andReturn().getResponse()
+					.getContentAsString();
+			dependant = (Dependant) jsonUtil.convertToObject(response, Dependant.class);
+		}
+	}
      
     @Test
-	public void test0006_entityNotFoundException() throws Exception {			
+   	public void test0008_getEmployeeDependants() throws Exception {
+    	Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+           mockMvc.perform(get("/companies/"+companyId+"/employees/"+employeeId+"/dependants"))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$", hasSize(3))).andExpect(jsonPath("$[0].id", anything()));
+       }
+    @Test
+   	public void test0009_deleteEmployeeDependant() throws Exception {
+    	Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+		Long dependantId=getDependantId();
+		mockMvc.perform(delete("/companies/"+companyId+"/employees/"+employeeId+"/dependants/"+dependantId))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$", is(dependantId.intValue())));
+       }
+    @Test
+   	public void test0010_getEmployeeDependantsAfterDelete() throws Exception {
+    	Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+           mockMvc.perform(get("/companies/"+companyId+"/employees/"+employeeId+"/dependants"))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$", hasSize(2)));
+       }
+    @Test
+	public void test0011_deleteCompanyEmployee() throws Exception{
+		Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+		this.mockMvc.perform(delete("/companies/"+companyId+"/employees/"+employeeId))
+				.andExpect(status().isOk())
+                .andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$", is(employeeId.intValue())));
+		}
+    
+    @Test
+	public void test0012_getCompanyEmployeesAfterDelete() throws Exception {
+    	Long companyId=getCompanyId();
+        mockMvc.perform(get("/companies/" + companyId+ "/employees/"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+    @Test
+	public void test0013_entityNotFoundException() throws Exception {			
 		mockMvc.perform(get("/companies/" + new Long(12234)))
 		.andExpect(content().contentType(contentType))
 		.andExpect(status().isNotFound()).andExpect(jsonPath("$.message", is("Company ,12234 Not Found")));
@@ -170,11 +205,21 @@ public class BayzatHrRestAPITest {
     }
     
     private void prepareTestEmployee() throws ParseException{
-    	prepareTestCompany();
+    	//prepareTestCompany();
     	this.employee=new Employee(this.company, "Shaiju", "8129998515", "Male", sdf.parse("04/03/1982"), 30000);
     }
     
-    public Long getCompanyIdByName() throws Exception {
+    private void prepareTestDependents() throws ParseException{
+    	//prepareTestCompany();
+    	Dependant dependent1=new Dependant("Shinju", "9645171203", sdf.parse("04/09/1984"), RelationShipType.HUSBAND.getRelationIdentifer(), employee);
+		Dependant dependent2=new Dependant("Albin S Shaiju", "9645171203", sdf.parse("28/07/2011"), RelationShipType.FATHER.getRelationIdentifer(), employee);
+		Dependant dependent3=new Dependant("Nivin S Shaiju", "9645171203", sdf.parse("22/10/2013"), RelationShipType.FATHER.getRelationIdentifer(), employee);
+    	this.dependents.add(dependent1);
+    	this.dependents.add(dependent2);
+    	this.dependents.add(dependent3);
+    }
+    
+    public Long getCompanyId() throws Exception {
     	prepare();
 		prepareTestCompany();
 		String companyJosn=mockMvc.perform(get("/companies/name/" + this.company.getName())).
@@ -183,6 +228,29 @@ public class BayzatHrRestAPITest {
 		Company existingCompany=(Company)existingCompanyLst.get(0);
 		Long companyId=existingCompany.getId();
 		return companyId;
+		
+    }
+    
+    public Long getEmployeeId() throws Exception {
+    	Long companyId=getCompanyId();
+		String employeesJosn=mockMvc.perform(get("/companies/"+companyId+"/employees")).
+				andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+		List<Object> existingEmployeeLst= jsonUtil.convertToListOfObjects(employeesJosn,Employee.class);
+		Employee existingEmployee=(Employee)existingEmployeeLst.get(0);
+		Long employeeId=existingEmployee.getId();
+		return employeeId;
+		
+    }
+    
+    public Long getDependantId() throws Exception {
+    	Long companyId=getCompanyId();
+		Long employeeId=getEmployeeId();
+		String employeesJosn=mockMvc.perform(get("/companies/"+companyId+"/employees/"+employeeId+"/dependants")).
+				andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+		List<Object> existingEmployeeLst= jsonUtil.convertToListOfObjects(employeesJosn,Dependant.class);
+		Dependant existingDependant=(Dependant)existingEmployeeLst.get(0);
+		Long dependantId=existingDependant.getId();
+		return dependantId;
 		
     }
     
