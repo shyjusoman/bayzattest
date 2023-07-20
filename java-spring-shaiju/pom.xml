@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.2.RELEASE</version>
+		<version>2.6.7</version>
 		<relativePath/>
 	</parent>
 	
@@ -38,9 +38,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>  
+		</dependency> 		
 	 <!-- Spring Boot Dependencies End -->	
-	 
+	       <dependency>
+            <artifactId>aspectjrt</artifactId>
+            <groupId>org.aspectj</groupId>
+            <version>1.9.6</version>
+      </dependency>
 	 <!-- DB Dependencies Start -->
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -50,18 +59,18 @@
 	<!-- DB Dependencies End -->
 	
 	<!-- API Docs Dependencies Start -->
-		<dependency>
+<!-- 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
-			<version>2.6.1</version>
+			<version>2.2.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<version>2.6.1</version>
+			<version>2.2.2</version>
 			<scope>compile</scope>
-		</dependency>
+		</dependency> -->
 	<!--  API Docs Dependencies End -->
   </dependencies>
   
